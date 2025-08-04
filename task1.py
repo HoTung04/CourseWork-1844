@@ -1,85 +1,92 @@
-import networkx as nx
-import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
+import networkx as nwx
+import matplotlib.pyplot as matplt
+import matplotlib.lines as matline
 
-# Station list
-stations = [
-    'Hyde Park Corner',
-    'Green Park',
-    'Piccadilly Circus',
-    'Leicester Square',
-    'Covent Garden',
-    'Holborn'
+
+# --- Piccadilly Route ---
+stations1 = [
+    'Holborn Station',
+    'Covent Garden Station',
+    'Leicester Square Station',
+    'Piccadilly Circus Station',
+    'Green Park Station',
+    'Hyde Park Corner Station'
 ]
 
-edges = [
-    ('Hyde Park Corner', 'Green Park', 0.8),
-    ('Green Park', 'Piccadilly Circus', 0.7),
-    ('Piccadilly Circus', 'Leicester Square', 0.45),
-    ('Leicester Square', 'Covent Garden', 0.3),
-    ('Covent Garden', 'Holborn', 0.6)
+edges1 = [
+    ('Leicester Square Station', 'Covent Garden Station', 0.3),#324.85
+    ('Piccadilly Circus Station', 'Leicester Square Station', 0.45),#445.98
+    ('Covent Garden Station', 'Holborn Station', 0.6),#570.37
+    ('Green Park Station', 'Piccadilly Circus Station', 0.7),#696.10
+    ('Hyde Park Corner Station', 'Green Park Station', 0.8),#784.36
 ]
 
-# Make graph
-G = nx.Graph()
-for u, v, d in edges:
-    G.add_edge(u, v, weight=d)
+# --- Graph ---
+Graph = nwx.Graph()
+for x, y, z in edges1:
+    Graph.add_edge(x, y, weight=z)
 
-# dot coordinates( x, y)
-pos = {
-    'Hyde Park Corner': (0, 0),
-    'Green Park': (1, 1),
-    'Piccadilly Circus': (2, 1),
-    'Leicester Square': (3, 1),
-    'Covent Garden': (4, 2),
-    'Holborn': (5, 3)
+# --- Dot position( x, y) ---
+dot = {
+    # Piccadilly Route
+    'Holborn Station': (5, 3),
+    'Covent Garden Station': (4, 2),
+    'Leicester Square Station':  (3, 1),
+    'Piccadilly Circus Station': (2, 1),
+    'Green Park Station': (1, 1),
+    'Hyde Park Corner Station': (0, 0),
 }
 
-# TOffset label position
+# --- Offset label position ---
 offset = {
-    'Hyde Park Corner': (0, -0.25),
-    'Green Park': (0, -0.25),
-    'Piccadilly Circus': (0, -0.25),
-    'Leicester Square': (0, -0.25),
-    'Covent Garden': (0, -0.25),
-    'Holborn': (0, -0.25)
+    # Piccadilly Route
+    'Green Park Station': (0, -0.25),
+    'Covent Garden Station': (0, -0.25),
+    'Hyde Park Corner Station': (-0.1, -0.25),
+    'Piccadilly Circus Station': (0, -0.25),
+    'Leicester Square Station': (0, -0.25),
+    'Holborn Station': (0,-0.25),
 }
+# --- Calculate new coordinates for label ---
+offset_dot = {nd: (dot[nd][0] + dx, dot[nd][1] + dy)
+              for nd, (dx, dy) in offset.items()}
 
-# Calculate new coordinates for label
-offset_pos = {node: (pos[node][0] + dx, pos[node][1] + dy)
-              for node, (dx, dy) in offset.items()}
+# --- Get distance label ---
+edge_labels = nwx.get_edge_attributes(Graph, 'weight')
 
-# Get distance label
-edge_labels = nx.get_edge_attributes(G, 'weight')
+# --- Draw graph ---
+matplt.figure(figsize=(12, 6))
 
-# Draw
-plt.figure(figsize=(10, 5))
-
-# Dot and Line
-nx.draw_networkx_nodes(G, pos, node_color='blue', node_size=800)
-nx.draw_networkx_edges(G, pos, edge_color='blue', width=2)
-
-# line label
-nx.draw_networkx_edge_labels(
-    G, pos,
-    edge_labels={k: f"{v:.1f} km" for k, v in edge_labels.items()},
-    font_size=8
+# Draw dot
+nwx.draw_networkx_nodes(Graph, dot,
+                       nodelist=stations1,
+                       node_size=800,
+                       node_color='darkblue')
+# draw Route
+nwx.draw_networkx_edges(Graph, dot,
+                       edgelist=edges1,
+                       width=2,
+                       edge_color='darkblue')
+# Route label
+nwx.draw_networkx_edge_labels(
+    Graph, dot,
+    edge_labels={a: f"{y:.1f} km" for a, y in edge_labels.items()},
+    font_size=7
 )
 
 # station label
-nx.draw_networkx_labels(G, pos,
-                        labels={n: "" for n in G.nodes()},
-                        font_size=9)
-nx.draw_networkx_labels(G, offset_pos,
-                        font_size=9,
-                        font_family="sans-serif")
+nwx.draw_networkx_labels(Graph, dot,
+                        labels={n: "" for n in Graph.nodes()},
+                        font_size=8)
+nwx.draw_networkx_labels(Graph, offset_dot,
+                        font_size=8,
+                        font_family="arial")
 
-# Line annotation
-piccadilly_line = mlines.Line2D([], [], color='blue', label='Piccadilly')
-plt.legend(handles=[piccadilly_line], loc='lower right',
-           title="Key", frameon=True)
+# Route annotation
+piccadilly_route = matline.Line2D([], [], color='darkblue', label='Piccadilly Route')
+matplt.legend(handles=[piccadilly_route], loc='upper left',
+           title="Routes", frameon=True)
 
-plt.title("Piccadilly Line – Task 1", fontsize=14)
-plt.axis('off')
-plt.tight_layout()
-plt.show()
+matplt.title(" Map of The transportation system", fontsize=14)
+matplt.show()
+
